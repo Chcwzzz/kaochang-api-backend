@@ -1,0 +1,25 @@
+﻿# 公共配置文件
+spring:
+  application:
+    name: kaochang-api-interface
+  # 默认 dev 环境
+  profiles:
+    active: dev
+  # 数据库配置
+  # todo 需替换配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/kaochang-api
+    username: root
+    password: root
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+kaochang:
+  client:
+    access-key: kaochang
+    secret-key: abcdefgh
