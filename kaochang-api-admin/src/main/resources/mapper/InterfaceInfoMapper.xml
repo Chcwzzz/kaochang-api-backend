@@ -9,6 +9,9 @@
         <result property="interfaceName" column="interfaceName" jdbcType="VARCHAR"/>
         <result property="description" column="description" jdbcType="VARCHAR"/>
         <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="requestParams" column="requestParams" jdbcType="VARCHAR"/>
+        <result property="responseParams" column="responseParams" jdbcType="VARCHAR"/>
+        <result property="requestExample" column="requestExample" jdbcType="VARCHAR"/>
         <result property="requestHeader" column="requestHeader" jdbcType="VARCHAR"/>
         <result property="responseHeader" column="responseHeader" jdbcType="VARCHAR"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
@@ -23,7 +26,7 @@
     <sql id="Base_Column_List">
         id
         ,interfaceName,description,
-        url,requestHeader,responseHeader,
+        url,requestParams,responseParams,requestExample,requestHeader,responseHeader,
         status,method,userId,totalInvokes,
         createTime,updateTime,isDelete
     </sql>

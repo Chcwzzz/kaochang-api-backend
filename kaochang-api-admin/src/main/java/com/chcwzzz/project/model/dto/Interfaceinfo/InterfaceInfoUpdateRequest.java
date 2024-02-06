@@ -1,14 +1,8 @@
 package com.chcwzzz.project.model.dto.Interfaceinfo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /**
  * 更新请求
@@ -35,6 +29,21 @@ public class InterfaceInfoUpdateRequest implements Serializable {
      * 接口地址
      */
     private String url;
+
+    /**
+     * 请求参数
+     */
+    private String requestParams;
+
+    /**
+     * 响应参数
+     */
+    private String responseParams;
+
+    /**
+     * 请求示例
+     */
+    private String requestExample;
 
     /**
      * 请求头

@@ -1,8 +1,11 @@
 package com.chcwzzz.project.model.dto.Interfaceinfo;
 
+import com.chcwzzz.project.common.RequestParams;
+import com.chcwzzz.project.common.ResponseParams;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 创建请求
@@ -24,6 +27,21 @@ public class InterfaceInfoAddRequest implements Serializable {
      * 接口地址
      */
     private String url;
+
+    /**
+     * 请求参数
+     */
+    private List<RequestParams> requestParams;
+
+    /**
+     * 响应参数
+     */
+    private List<ResponseParams> responseParams;
+
+    /**
+     * 请求示例
+     */
+    private String requestExample;
 
     /**
      * 请求头

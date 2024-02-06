@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 帖子接口
@@ -60,6 +61,10 @@ public class InterfaceInfoController {
         }
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
+        List<RequestParams> requestParams = interfaceInfoAddRequest.getRequestParams();
+        List<ResponseParams> responseParams = interfaceInfoAddRequest.getResponseParams();
+        interfaceInfo.setRequestParams(GSON.toJson(requestParams));
+        interfaceInfo.setResponseParams(GSON.toJson(responseParams));
         //校验
         interfaceInfoService.validInterfaceInfo(interfaceInfo, true);
         User loginUser = userService.getLoginUser(request);
@@ -162,6 +167,7 @@ public class InterfaceInfoController {
 
     /**
      * 上线接口
+     *
      * @param idRequest
      * @return
      */
@@ -197,6 +203,7 @@ public class InterfaceInfoController {
 
     /**
      * 下线接口
+     *
      * @param idRequest
      * @return
      */
