@@ -47,12 +47,12 @@ public class User implements Serializable {
     /**
      * accessKey
      */
-    private String accesskey;
+    private String accessKey;
 
     /**
      * secretKey
      */
-    private String secretkey;
+    private String secretKey;
 
     /**
      * 创建时间

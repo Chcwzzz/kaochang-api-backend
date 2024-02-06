@@ -68,14 +68,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
             //生成accessKey和secretKey
-            String accessKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true)).getBytes());
-            String secretKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + RandomUtil.randomNumbers(4)).getBytes());
+            String accessKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + userAccount).getBytes());
+            String secretKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + userAccount + RandomUtil.randomNumbers(4)).getBytes());
             // 3. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
-            user.setAccesskey(accessKey);
-            user.setSecretkey(secretKey);
+            user.setAccessKey(accessKey);
+            user.setSecretKey(secretKey);
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
