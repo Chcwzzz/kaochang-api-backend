@@ -92,6 +92,11 @@
             <groupId>com.qcloud</groupId>
             <artifactId>cos_api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.chcwzzz</groupId>
+            <artifactId>kaochang-api-sdk</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

@@ -1,6 +1,6 @@
 package com.chcwzzz.myInterface.controller;
 
-import com.chcwzzz.myInterface.model.UserName;
+import com.chcwzzz.myInterface.domain.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/name")
 public class NameController {
     @PostMapping("/user")
-    public String getUserNameByPost(@RequestBody UserName user) {
+    public String getUserNameByPost(@RequestBody User user) {
         return "POST 你的名字是：" + user.getUsername();
     }
 }

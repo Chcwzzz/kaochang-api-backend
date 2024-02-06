@@ -1,11 +1,10 @@
 package com.chcwzzz.project.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chcwzzz.project.annotation.AuthCheck;
-import com.chcwzzz.project.common.BaseResponse;
-import com.chcwzzz.project.common.DeleteRequest;
-import com.chcwzzz.project.common.ErrorCode;
-import com.chcwzzz.project.common.ResultUtils;
+import com.chcwzzz.project.common.*;
+import com.chcwzzz.project.constant.InterfaceStatusConstant;
 import com.chcwzzz.project.constant.UserConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.exception.ThrowUtils;
@@ -16,6 +15,8 @@ import com.chcwzzz.project.model.entity.InterfaceInfo;
 import com.chcwzzz.project.model.entity.User;
 import com.chcwzzz.project.service.InterfaceInfoService;
 import com.chcwzzz.project.service.UserService;
+import com.chcwzzz.sdk.client.KaochangClient;
+import com.chcwzzz.sdk.model.DevRequest;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 帖子接口
@@ -38,6 +38,9 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private KaochangClient kaochangClient;
 
     private final static Gson GSON = new Gson();
 
@@ -145,7 +148,7 @@ public class InterfaceInfoController {
     @PostMapping("/list/page")
     public BaseResponse<Page<InterfaceInfo>> listInterfaceInfoByPage(@RequestBody InterfaceInfoQueryRequest interfaceInfoQueryRequest,
                                                                      HttpServletRequest request) {
-        if (interfaceInfoQueryRequest == null){
+        if (interfaceInfoQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         long current = interfaceInfoQueryRequest.getCurrent();
@@ -156,5 +159,66 @@ public class InterfaceInfoController {
                 interfaceInfoService.getQueryWrapper(interfaceInfoQueryRequest));
         return ResultUtils.success(interfaceInfoPage);
     }
+
+    /**
+     * 上线接口
+     * @param idRequest
+     * @return
+     */
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/online")
+    public BaseResponse<Boolean> interfaceOnline(@RequestBody IdRequest idRequest) {
+        Long id = idRequest.getId();
+        //1.参数校验
+        if (idRequest == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //2.校验接口是否存在
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        //3.校验接口是否能够正常调用
+        DevRequest devRequest = new DevRequest();
+        User user = new User();
+        user.setUserName("烤肠");
+        devRequest.setUrl("localhost:8123/api/name/user");
+        devRequest.setBody(user);
+        String response = kaochangClient.doPost(devRequest);
+        if (StrUtil.isBlank(response)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "接口验证失败");
+        }
+
+        //上线接口
+        interfaceInfo.setStatus(InterfaceStatusConstant.ONLINE);
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 下线接口
+     * @param idRequest
+     * @return
+     */
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/offline")
+    public BaseResponse<Boolean> interfaceOffline(@RequestBody IdRequest idRequest) {
+        Long id = idRequest.getId();
+        //1.参数校验
+        if (idRequest == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //2.校验接口是否存在
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+
+        //下线接口
+        interfaceInfo.setStatus(InterfaceStatusConstant.OFFLINE);
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+    }
+
     // endregion
 }

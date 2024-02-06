@@ -1,7 +1,7 @@
 package com.chcwzz.myInterface;
 
 import com.chcwzzz.myInterface.KaoChangInterfaceApplication;
-import com.chcwzzz.myInterface.model.UserName;
+import com.chcwzzz.myInterface.domain.User;
 import com.chcwzzz.sdk.client.KaochangClient;
 import com.chcwzzz.sdk.model.DevRequest;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ public class SprinTest {
 
     @Test
     public void testStarter() {
-        UserName userName = new UserName();
+        User userName = new User();
         userName.setUsername("测试请求");
         DevRequest devRequest = new DevRequest();
         devRequest.setUrl("http://localhost:8123/api/name/user");
