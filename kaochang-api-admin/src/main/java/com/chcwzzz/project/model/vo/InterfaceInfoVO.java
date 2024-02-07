@@ -1,18 +1,20 @@
-package com.chcwzzz.project.model.dto.Interfaceinfo;
+package com.chcwzzz.project.model.vo;
 
+import com.baomidou.mybatisplus.annotation.*;
 import com.chcwzzz.project.common.RequestParams;
 import com.chcwzzz.project.common.ResponseParams;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
- * 更新请求
+ * 接口信息表
+ *
  */
 @Data
-public class InterfaceInfoUpdateRequest implements Serializable {
-
+public class InterfaceInfoVO implements Serializable {
     /**
      * 主键
      */
@@ -68,5 +70,32 @@ public class InterfaceInfoUpdateRequest implements Serializable {
      */
     private String method;
 
+    /**
+     * 创建人
+     */
+    private Long userId;
+
+    /**
+     * 调用次数
+     */
+    private Long totalInvokes;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否删除 0 - 未删  1 - 已删
+     */
+    @TableLogic
+    private Integer isDelete;
+
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

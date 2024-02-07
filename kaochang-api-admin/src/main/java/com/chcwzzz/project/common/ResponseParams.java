@@ -7,6 +7,12 @@ import lombok.Data;
  */
 @Data
 public class ResponseParams {
+
+    /**
+     * 参数id，用于前端区分参数
+     */
+    private String  id;
+
     /**
      * 参数名称
      */

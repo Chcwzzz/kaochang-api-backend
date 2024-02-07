@@ -1,5 +1,6 @@
 package com.chcwzzz.project.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chcwzzz.project.annotation.AuthCheck;
@@ -13,18 +14,22 @@ import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoQueryRequest;
 import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoUpdateRequest;
 import com.chcwzzz.project.model.entity.InterfaceInfo;
 import com.chcwzzz.project.model.entity.User;
+import com.chcwzzz.project.model.vo.InterfaceInfoVO;
 import com.chcwzzz.project.service.InterfaceInfoService;
 import com.chcwzzz.project.service.UserService;
 import com.chcwzzz.sdk.client.KaochangClient;
 import com.chcwzzz.sdk.model.DevRequest;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 帖子接口
@@ -61,10 +66,28 @@ public class InterfaceInfoController {
         }
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
-        List<RequestParams> requestParams = interfaceInfoAddRequest.getRequestParams();
-        List<ResponseParams> responseParams = interfaceInfoAddRequest.getResponseParams();
-        interfaceInfo.setRequestParams(GSON.toJson(requestParams));
-        interfaceInfo.setResponseParams(GSON.toJson(responseParams));
+        //前端可能传递空的字段，后端需要校验，把不符合规则的字段去除掉
+        if (CollUtil.isNotEmpty(interfaceInfoAddRequest.getRequestParams())) {
+            List<RequestParams> requestParams = interfaceInfoAddRequest.getRequestParams()
+                    .stream().filter(requestParam -> {
+                        String paramName = requestParam.getParamName();
+                        String description = requestParam.getDescription();
+                        String type = requestParam.getType();
+                        String required = requestParam.getRequired();
+                        return !StringUtils.isAnyBlank(paramName, description, type, required);
+                    }).collect(Collectors.toList());
+            interfaceInfo.setRequestParams(GSON.toJson(requestParams));
+        }
+        if (CollUtil.isNotEmpty(interfaceInfoAddRequest.getResponseParams())) {
+            List<ResponseParams> responseParams = interfaceInfoAddRequest.getResponseParams()
+                    .stream().filter(requestParam -> {
+                        String paramName = requestParam.getParamName();
+                        String description = requestParam.getDescription();
+                        String type = requestParam.getType();
+                        return !StringUtils.isAnyBlank(paramName, description, type);
+                    }).collect(Collectors.toList());
+            interfaceInfo.setResponseParams(GSON.toJson(responseParams));
+        }
         //校验
         interfaceInfoService.validInterfaceInfo(interfaceInfo, true);
         User loginUser = userService.getLoginUser(request);
@@ -115,6 +138,28 @@ public class InterfaceInfoController {
         }
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         BeanUtils.copyProperties(interfaceInfoUpdateRequest, interfaceInfo);
+        //前端可能传递空的字段，后端需要校验，把不符合规则的字段去除掉
+        if (CollUtil.isNotEmpty(interfaceInfoUpdateRequest.getRequestParams())) {
+            List<RequestParams> requestParams = interfaceInfoUpdateRequest.getRequestParams()
+                    .stream().filter(requestParam -> {
+                        String paramName = requestParam.getParamName();
+                        String description = requestParam.getDescription();
+                        String type = requestParam.getType();
+                        String required = requestParam.getRequired();
+                        return !StringUtils.isAnyBlank(paramName, description, type, required);
+                    }).collect(Collectors.toList());
+            interfaceInfo.setRequestParams(GSON.toJson(requestParams));
+        }
+        if (CollUtil.isNotEmpty(interfaceInfoUpdateRequest.getResponseParams())) {
+            List<ResponseParams> responseParams = interfaceInfoUpdateRequest.getResponseParams()
+                    .stream().filter(requestParam -> {
+                        String paramName = requestParam.getParamName();
+                        String description = requestParam.getDescription();
+                        String type = requestParam.getType();
+                        return !StringUtils.isAnyBlank(paramName, description, type);
+                    }).collect(Collectors.toList());
+            interfaceInfo.setResponseParams(GSON.toJson(responseParams));
+        }
         // 参数校验
         interfaceInfoService.validInterfaceInfo(interfaceInfo, false);
         long id = interfaceInfoUpdateRequest.getId();
@@ -140,6 +185,7 @@ public class InterfaceInfoController {
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
+
         return ResultUtils.success(interfaceInfo);
     }
 
@@ -151,8 +197,8 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/list/page")
-    public BaseResponse<Page<InterfaceInfo>> listInterfaceInfoByPage(@RequestBody InterfaceInfoQueryRequest interfaceInfoQueryRequest,
-                                                                     HttpServletRequest request) {
+    public BaseResponse<Page<InterfaceInfoVO>> listInterfaceInfoByPage(@RequestBody InterfaceInfoQueryRequest interfaceInfoQueryRequest,
+                                                                       HttpServletRequest request) {
         if (interfaceInfoQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -162,7 +208,25 @@ public class InterfaceInfoController {
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size),
                 interfaceInfoService.getQueryWrapper(interfaceInfoQueryRequest));
-        return ResultUtils.success(interfaceInfoPage);
+        Page<InterfaceInfoVO> interfaceInfoVOPage = new Page<>();
+        BeanUtils.copyProperties(interfaceInfoPage, interfaceInfoVOPage);
+        interfaceInfoVOPage.setRecords(interfaceInfoPage.getRecords().stream().map(record -> {
+            InterfaceInfoVO interfaceInfoVO = new InterfaceInfoVO();
+            BeanUtils.copyProperties(record, interfaceInfoVO);
+            String requestParams = record.getRequestParams();
+            if (StringUtils.isNotBlank(requestParams)) {
+                interfaceInfoVO.setRequestParams(GSON.fromJson(requestParams, new TypeToken<List<RequestParams>>() {
+                }.getType()));
+            }
+            String responseParams = record.getResponseParams();
+            if (StringUtils.isNotBlank(responseParams)) {
+                interfaceInfoVO.setResponseParams(GSON.fromJson(responseParams, new TypeToken<List<ResponseParams>>() {
+                }.getType()));
+            }
+            return interfaceInfoVO;
+        }).collect(Collectors.toList()));
+
+        return ResultUtils.success(interfaceInfoVOPage);
     }
 
     /**

@@ -8,6 +8,11 @@ import lombok.Data;
 @Data
 public class RequestParams {
     /**
+     * 参数id，用于前端区分参数
+     */
+    private String  id;
+
+    /**
      * 参数名称
      */
     private String paramName;
