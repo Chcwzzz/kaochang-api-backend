@@ -47,10 +47,10 @@ public class RequestInterceptor {
 
         // todo 实际情况应该去数据库中查询ak和sk
         User dbUser = userService.lambdaQuery()
-                .eq(User::getAccesskey, accessKeyHeader)
+                .eq(User::getAccessKey, accessKeyHeader)
                 .one();
-        String dBAccessKey = dbUser.getAccesskey();
-        String dBSecretKey = dbUser.getSecretkey();
+        String dBAccessKey = dbUser.getAccessKey();
+        String dBSecretKey = dbUser.getSecretKey();
 
 
         //1. 校验ak
@@ -59,7 +59,7 @@ public class RequestInterceptor {
         }
         //2. 校验nonce是否使用过
         String usedNonce = nonceMap.get("nonce");
-        if (StrUtil.isNotBlank(usedNonce)) {
+        if (StrUtil.isNotBlank(usedNonce) && usedNonce.equals(nonce)) {
             throw new RuntimeException("无权限");
         }
         nonceMap.put("nonce", nonce);

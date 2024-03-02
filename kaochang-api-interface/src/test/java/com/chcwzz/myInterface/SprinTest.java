@@ -17,7 +17,7 @@ public class SprinTest {
     @Test
     public void testStarter() {
         User userName = new User();
-        userName.setUsername("测试请求");
+        userName.setUserName("测试请求");
         DevRequest devRequest = new DevRequest();
         devRequest.setUrl("http://localhost:8123/api/name/user");
         devRequest.setBody(userName);

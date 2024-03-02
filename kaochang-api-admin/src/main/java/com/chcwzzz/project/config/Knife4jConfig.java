@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Profile;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -28,6 +29,7 @@ public class Knife4jConfig {
                         .title("接口文档")
                         .description("kaochang-api-backend")
                         .version("1.0")
+                        .contact(new Contact("Chcwzzz","https://github.com/Chcwzzz","1027485171@qq.com"))
                         .build())
                 .select()
                 // 指定 Controller 扫描包路径

@@ -2,6 +2,9 @@ package com.chcwzzz.project.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chcwzzz.project.annotation.AuthCheck;
 import com.chcwzzz.project.common.*;
@@ -12,6 +15,7 @@ import com.chcwzzz.project.exception.ThrowUtils;
 import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoAddRequest;
 import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoQueryRequest;
 import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoUpdateRequest;
+import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInvokeRequest;
 import com.chcwzzz.project.model.entity.InterfaceInfo;
 import com.chcwzzz.project.model.entity.User;
 import com.chcwzzz.project.model.vo.InterfaceInfoVO;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -289,6 +294,43 @@ public class InterfaceInfoController {
         interfaceInfo.setStatus(InterfaceStatusConstant.OFFLINE);
         boolean result = interfaceInfoService.updateById(interfaceInfo);
         return ResultUtils.success(result);
+    }
+
+    @PostMapping("/invoke")
+    public BaseResponse<Object> interfaceInvoke(@RequestBody InterfaceInvokeRequest interfaceInvokeRequest, HttpServletRequest request) {
+        if (interfaceInvokeRequest == null || interfaceInvokeRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        long id = interfaceInvokeRequest.getId();
+        List<UserRequestParams> requestParams = interfaceInvokeRequest.getRequestParams();
+        String url = interfaceInvokeRequest.getUrl();
+        // 判断是否存在
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        ThrowUtils.throwIf(interfaceInfo == null, ErrorCode.NOT_FOUND_ERROR);
+        if (Objects.equals(interfaceInfo.getStatus(), InterfaceStatusConstant.OFFLINE)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已下线");
+        }
+        User loginUser = userService.getLoginUser(request);
+        String accessKey = loginUser.getAccessKey();
+        String secretKey = loginUser.getSecretKey();
+        KaochangClient tempClient = new KaochangClient(accessKey, secretKey);
+        DevRequest devRequest = new DevRequest();
+        devRequest.setUrl(url);
+        devRequest.setBody("null");
+        if (CollUtil.isNotEmpty(requestParams)) {
+            for (UserRequestParams requestParam : requestParams) {
+                String paramName = requestParam.getParamName();
+                String value = requestParam.getValue().toString();
+                if (StrUtil.isAllNotBlank(paramName, value)) {
+                    User user = new User();
+                    user.setUserName(value);
+                    devRequest.setBody(user);
+                }
+            }
+        }
+        String res = tempClient.doPost(devRequest);
+        return ResultUtils.success(res);
     }
 
     // endregion

@@ -1,9 +1,6 @@
 package com.chcwzzz.myInterface.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,66 +8,67 @@ import java.util.Date;
 
 /**
  * 用户
- * @TableName user
  */
-@TableName(value ="user")
+@TableName(value = "user")
 @Data
 public class User implements Serializable {
+
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
-     * 账号
+     * 用户账号
      */
-    private String useraccount;
+    private String userAccount;
 
     /**
-     * 密码
+     * 用户密码
      */
-    private String userpassword;
+    private String userPassword;
 
     /**
      * 用户昵称
      */
-    private String username;
+    private String userName;
 
     /**
      * 用户头像
      */
-    private String useravatar;
+    private String userAvatar;
 
     /**
      * 用户角色：user/admin/ban
      */
-    private String userrole;
-
-    /**
-     * 创建时间
-     */
-    private Date createtime;
-
-    /**
-     * 更新时间
-     */
-    private Date updatetime;
-
-    /**
-     * 是否删除
-     */
-    private Integer isdelete;
+    private String userRole;
 
     /**
      * accessKey
      */
-    private String accesskey;
+    private String accessKey;
 
     /**
      * secretKey
      */
-    private String secretkey;
+    private String secretKey;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否删除
+     */
+    @TableLogic
+    private Integer isDelete;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
