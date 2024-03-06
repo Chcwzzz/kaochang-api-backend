@@ -1,5 +1,7 @@
 package com.chcwzz.myInterface;
 
+import cn.hutool.core.util.URLUtil;
+import cn.hutool.http.HttpRequest;
 import com.chcwzzz.myInterface.KaoChangInterfaceApplication;
 import com.chcwzzz.myInterface.domain.User;
 import com.chcwzzz.sdk.client.KaochangClient;
@@ -21,7 +23,14 @@ public class SprinTest {
         DevRequest devRequest = new DevRequest();
         devRequest.setUrl("http://localhost:8123/api/name/user");
         devRequest.setBody(userName);
-        String response = kaochangClient.doPost(devRequest);
+        devRequest.setMethod("POST");
+        String response = kaochangClient.request(devRequest);
         System.out.println("response = " + response);
+    }
+
+    @Test
+    public void testPing(){
+        String res = kaochangClient.translateInterface("我爱你", 3);
+        System.out.println("res = " + res);
     }
 }

@@ -23,8 +23,8 @@ import java.util.Map;
 /**
  * 请求校验
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
 @RequiredArgsConstructor
 public class RequestInterceptor {
     private final UserService userService;

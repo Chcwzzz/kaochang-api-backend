@@ -1,6 +1,6 @@
 package com.chcwzzz.project.mapper;
 
-import com.chcwzzz.project.model.entity.InterfaceInfo;
+import com.chcwzzz.common.model.entity.InterfaceInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

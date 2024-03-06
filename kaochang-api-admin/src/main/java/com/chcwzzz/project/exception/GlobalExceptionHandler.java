@@ -1,8 +1,8 @@
 package com.chcwzzz.project.exception;
 
-import com.chcwzzz.project.common.BaseResponse;
-import com.chcwzzz.project.common.ErrorCode;
-import com.chcwzzz.project.common.ResultUtils;
+import com.chcwzzz.common.common.BaseResponse;
+import com.chcwzzz.common.common.ErrorCode;
+import com.chcwzzz.common.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

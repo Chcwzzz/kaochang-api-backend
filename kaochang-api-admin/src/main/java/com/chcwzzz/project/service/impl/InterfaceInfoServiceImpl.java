@@ -2,13 +2,13 @@ package com.chcwzzz.project.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chcwzzz.project.common.ErrorCode;
-import com.chcwzzz.project.constant.CommonConstant;
+import com.chcwzzz.common.common.ErrorCode;
+import com.chcwzzz.common.constant.CommonConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.exception.ThrowUtils;
 import com.chcwzzz.project.mapper.InterfaceInfoMapper;
-import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoQueryRequest;
-import com.chcwzzz.project.model.entity.InterfaceInfo;
+import com.chcwzzz.common.model.dto.Interfaceinfo.InterfaceInfoQueryRequest;
+import com.chcwzzz.common.model.entity.InterfaceInfo;
 import com.chcwzzz.project.service.InterfaceInfoService;
 import com.chcwzzz.project.utils.SqlUtils;
 import org.apache.commons.lang3.ObjectUtils;

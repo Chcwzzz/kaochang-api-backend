@@ -2,24 +2,24 @@ package com.chcwzzz.project.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chcwzzz.common.common.*;
+import com.chcwzzz.common.model.entity.UserInterfaceInfo;
+import com.chcwzzz.common.model.vo.UserInterfaceInfoVO;
 import com.chcwzzz.project.annotation.AuthCheck;
-import com.chcwzzz.project.common.*;
-import com.chcwzzz.project.constant.InterfaceStatusConstant;
-import com.chcwzzz.project.constant.UserConstant;
+import com.chcwzzz.common.constant.InterfaceStatusConstant;
+import com.chcwzzz.common.constant.UserConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.exception.ThrowUtils;
-import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoAddRequest;
-import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoQueryRequest;
-import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInfoUpdateRequest;
-import com.chcwzzz.project.model.dto.Interfaceinfo.InterfaceInvokeRequest;
-import com.chcwzzz.project.model.entity.InterfaceInfo;
-import com.chcwzzz.project.model.entity.User;
-import com.chcwzzz.project.model.vo.InterfaceInfoVO;
+import com.chcwzzz.common.model.dto.Interfaceinfo.InterfaceInfoAddRequest;
+import com.chcwzzz.common.model.dto.Interfaceinfo.InterfaceInfoQueryRequest;
+import com.chcwzzz.common.model.dto.Interfaceinfo.InterfaceInfoUpdateRequest;
+import com.chcwzzz.common.model.dto.Interfaceinfo.InterfaceInvokeRequest;
+import com.chcwzzz.common.model.entity.InterfaceInfo;
+import com.chcwzzz.common.model.entity.User;
+import com.chcwzzz.common.model.vo.InterfaceInfoVO;
 import com.chcwzzz.project.service.InterfaceInfoService;
+import com.chcwzzz.project.service.UserInterfaceInfoService;
 import com.chcwzzz.project.service.UserService;
 import com.chcwzzz.sdk.client.KaochangClient;
 import com.chcwzzz.sdk.model.DevRequest;
@@ -32,8 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +45,8 @@ public class InterfaceInfoController {
 
     @Resource
     private InterfaceInfoService interfaceInfoService;
+    @Resource
+    private UserInterfaceInfoService userInterfaceInfoService;
 
     @Resource
     private UserService userService;
@@ -182,7 +183,7 @@ public class InterfaceInfoController {
      * @return
      */
     @GetMapping("/get")
-    public BaseResponse<InterfaceInfo> getInterfaceInfoById(long id) {
+    public BaseResponse<UserInterfaceInfoVO> getInterfaceInfoById(long id, HttpServletRequest request) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -190,8 +191,22 @@ public class InterfaceInfoController {
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-
-        return ResultUtils.success(interfaceInfo);
+        User loginUser = userService.getLoginUser(request);
+        UserInterfaceInfoVO userInterfaceInfoVO = new UserInterfaceInfoVO();
+        BeanUtils.copyProperties(interfaceInfo, userInterfaceInfoVO);
+        if (loginUser != null) {
+            UserInterfaceInfo one = userInterfaceInfoService.lambdaQuery()
+                    .eq(UserInterfaceInfo::getUserid, loginUser.getId())
+                    .eq(UserInterfaceInfo::getInterfaceinfoid, id)
+                    .one();
+            if (one != null) {
+                Integer userleftinvokes = one.getUserleftinvokes();
+                Integer usertotalinvokes = one.getUsertotalinvokes();
+                userInterfaceInfoVO.setUsertotalinvokes(usertotalinvokes);
+                userInterfaceInfoVO.setUserleftinvokes(userleftinvokes);
+            }
+        }
+        return ResultUtils.success(userInterfaceInfoVO);
     }
 
     /**
@@ -255,13 +270,20 @@ public class InterfaceInfoController {
         }
         //3.校验接口是否能够正常调用
         DevRequest devRequest = new DevRequest();
-        User user = new User();
-        user.setUserName("烤肠");
-        devRequest.setUrl("localhost:8123/api/name/user");
-        devRequest.setBody(user);
-        String response = kaochangClient.doPost(devRequest);
-        if (StrUtil.isBlank(response)) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "接口验证失败");
+        String method = interfaceInfo.getMethod();
+        String requestExample = interfaceInfo.getRequestExample();
+        devRequest.setUrl(requestExample);
+        devRequest.setBody("null");
+        devRequest.setMethod(method);
+        if ("GET".equals(method)) {
+            String response = kaochangClient.request(devRequest);
+
+            if (StrUtil.isBlank(response)) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "接口验证失败");
+            }
+        }
+        if ("POST".equals(method)) {
+
         }
 
         //上线接口
@@ -296,6 +318,14 @@ public class InterfaceInfoController {
         return ResultUtils.success(result);
     }
 
+
+    /**
+     * 在线调试调用接口
+     *
+     * @param interfaceInvokeRequest
+     * @param request
+     * @return
+     */
     @PostMapping("/invoke")
     public BaseResponse<Object> interfaceInvoke(@RequestBody InterfaceInvokeRequest interfaceInvokeRequest, HttpServletRequest request) {
         if (interfaceInvokeRequest == null || interfaceInvokeRequest.getId() <= 0) {
@@ -312,25 +342,70 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已下线");
         }
         User loginUser = userService.getLoginUser(request);
+        UserInterfaceInfo one = userInterfaceInfoService.lambdaQuery()
+                .eq(UserInterfaceInfo::getUserid, loginUser.getId())
+                .eq(UserInterfaceInfo::getInterfaceinfoid, id)
+                .one();
+        if (one == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未开通该接口");
+        }
+        if (one.getUserleftinvokes() <= 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "无剩余调用次数，请重新开通接口获取次数");
+        }
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
         KaochangClient tempClient = new KaochangClient(accessKey, secretKey);
         DevRequest devRequest = new DevRequest();
         devRequest.setUrl(url);
         devRequest.setBody("null");
-        if (CollUtil.isNotEmpty(requestParams)) {
-            for (UserRequestParams requestParam : requestParams) {
-                String paramName = requestParam.getParamName();
-                String value = requestParam.getValue().toString();
-                if (StrUtil.isAllNotBlank(paramName, value)) {
-                    User user = new User();
-                    user.setUserName(value);
-                    devRequest.setBody(user);
+        if ("POST".equals(interfaceInvokeRequest.getMethod())) {
+            if (CollUtil.isNotEmpty(requestParams)) {
+                Map<String, Object> params = new HashMap<>();
+                for (UserRequestParams requestParam : requestParams) {
+                    String paramName = requestParam.getParamName();
+                    String value = requestParam.getValue().toString();
+                    if (StrUtil.isAllNotBlank(paramName, value)) {
+                        params.put(paramName, value);
+                    }
                 }
+                devRequest.setBody(params);
+            } else {
+                return ResultUtils.error(ErrorCode.PARAMS_ERROR);
             }
         }
-        String res = tempClient.doPost(devRequest);
+        if ("GET".equals(interfaceInvokeRequest.getMethod())) {
+            if (CollUtil.isNotEmpty(requestParams)) {
+                Map<String, Object> params = new HashMap<>();
+                for (UserRequestParams requestParam : requestParams) {
+                    String paramName = requestParam.getParamName();
+                    Object value = requestParam.getValue();
+                    params.put(paramName, value);
+                }
+                devRequest.setBody(params);
+            }
+        }
+        devRequest.setMethod(interfaceInvokeRequest.getMethod());
+        String res = tempClient.request(devRequest);
         return ResultUtils.success(res);
+    }
+
+    /**
+     * 根据url和method查询接口是否存在
+     *
+     * @param url
+     * @param method
+     * @return
+     */
+    @GetMapping("/getInterfaceInfoByUrlAndMethod")
+    public InterfaceInfo getInterfaceInfoByUrlAndMethod(@RequestParam String url, @RequestParam String method) {
+        //1.参数校验
+        if (StringUtils.isAnyBlank(url, method)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return interfaceInfoService.lambdaQuery()
+                .eq(InterfaceInfo::getUrl, url)
+                .eq(InterfaceInfo::getMethod, method)
+                .one();
     }
 
     // endregion

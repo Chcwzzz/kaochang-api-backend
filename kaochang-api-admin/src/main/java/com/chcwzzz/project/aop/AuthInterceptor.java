@@ -1,10 +1,10 @@
 package com.chcwzzz.project.aop;
 
 import com.chcwzzz.project.annotation.AuthCheck;
-import com.chcwzzz.project.common.ErrorCode;
+import com.chcwzzz.common.common.ErrorCode;
 import com.chcwzzz.project.exception.BusinessException;
-import com.chcwzzz.project.model.entity.User;
-import com.chcwzzz.project.model.enums.UserRoleEnum;
+import com.chcwzzz.common.model.entity.User;
+import com.chcwzzz.common.model.enums.UserRoleEnum;
 import com.chcwzzz.project.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;

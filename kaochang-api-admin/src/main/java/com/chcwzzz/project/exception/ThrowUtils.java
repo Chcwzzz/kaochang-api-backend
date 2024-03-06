@@ -1,6 +1,6 @@
 package com.chcwzzz.project.exception;
 
-import com.chcwzzz.project.common.ErrorCode;
+import com.chcwzzz.common.common.ErrorCode;
 
 /**
  * 抛异常工具类

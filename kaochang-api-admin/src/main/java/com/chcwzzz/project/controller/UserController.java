@@ -1,18 +1,18 @@
 package com.chcwzzz.project.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chcwzzz.common.model.dto.user.*;
 import com.chcwzzz.project.annotation.AuthCheck;
-import com.chcwzzz.project.common.BaseResponse;
-import com.chcwzzz.project.common.DeleteRequest;
-import com.chcwzzz.project.common.ErrorCode;
-import com.chcwzzz.project.common.ResultUtils;
-import com.chcwzzz.project.constant.UserConstant;
+import com.chcwzzz.common.common.BaseResponse;
+import com.chcwzzz.common.common.DeleteRequest;
+import com.chcwzzz.common.common.ErrorCode;
+import com.chcwzzz.common.common.ResultUtils;
+import com.chcwzzz.common.constant.UserConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.exception.ThrowUtils;
-import com.chcwzzz.project.model.dto.user.*;
-import com.chcwzzz.project.model.entity.User;
-import com.chcwzzz.project.model.vo.LoginUserVO;
-import com.chcwzzz.project.model.vo.UserVO;
+import com.chcwzzz.common.model.entity.User;
+import com.chcwzzz.common.model.vo.LoginUserVO;
+import com.chcwzzz.common.model.vo.UserVO;
 import com.chcwzzz.project.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -263,5 +263,18 @@ public class UserController {
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
+    }
+
+    /**
+     * 根据accessKey查询用户信息
+     *
+     * @param accessKey
+     * @return
+     */
+    @GetMapping("/getUserByAK")
+    public User getUserByAK(String accessKey) {
+        return userService.lambdaQuery()
+                .eq(User::getAccessKey, accessKey)
+                .one();
     }
 }

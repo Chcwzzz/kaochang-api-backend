@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.chcwzzz.project.mapper.UserMapper">
-    <resultMap id="BaseResultMap" type="com.chcwzzz.project.model.entity.User">
+    <resultMap id="BaseResultMap" type="com.chcwzzz.common.model.entity.User">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="userName" column="userName" jdbcType="VARCHAR"/>
         <result property="userAvatar" column="userAvatar" jdbcType="VARCHAR"/>

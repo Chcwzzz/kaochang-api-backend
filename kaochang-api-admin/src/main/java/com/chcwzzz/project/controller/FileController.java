@@ -1,15 +1,15 @@
 package com.chcwzzz.project.controller;
 
 import cn.hutool.core.io.FileUtil;
-import com.chcwzzz.project.common.BaseResponse;
-import com.chcwzzz.project.common.ErrorCode;
-import com.chcwzzz.project.common.ResultUtils;
-import com.chcwzzz.project.constant.FileConstant;
+import com.chcwzzz.common.common.BaseResponse;
+import com.chcwzzz.common.common.ErrorCode;
+import com.chcwzzz.common.common.ResultUtils;
+import com.chcwzzz.common.constant.FileConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.manager.CosManager;
-import com.chcwzzz.project.model.dto.file.UploadFileRequest;
-import com.chcwzzz.project.model.entity.User;
-import com.chcwzzz.project.model.enums.FileUploadBizEnum;
+import com.chcwzzz.common.model.dto.file.UploadFileRequest;
+import com.chcwzzz.common.model.entity.User;
+import com.chcwzzz.common.model.enums.FileUploadBizEnum;
 import com.chcwzzz.project.service.UserService;
 
 import java.io.File;

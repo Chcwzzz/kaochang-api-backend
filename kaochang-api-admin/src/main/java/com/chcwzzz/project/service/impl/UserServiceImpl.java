@@ -5,15 +5,15 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chcwzzz.project.common.ErrorCode;
-import com.chcwzzz.project.constant.CommonConstant;
+import com.chcwzzz.common.common.ErrorCode;
+import com.chcwzzz.common.constant.CommonConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.mapper.UserMapper;
-import com.chcwzzz.project.model.dto.user.UserQueryRequest;
-import com.chcwzzz.project.model.entity.User;
-import com.chcwzzz.project.model.enums.UserRoleEnum;
-import com.chcwzzz.project.model.vo.LoginUserVO;
-import com.chcwzzz.project.model.vo.UserVO;
+import com.chcwzzz.common.model.dto.user.UserQueryRequest;
+import com.chcwzzz.common.model.entity.User;
+import com.chcwzzz.common.model.enums.UserRoleEnum;
+import com.chcwzzz.common.model.vo.LoginUserVO;
+import com.chcwzzz.common.model.vo.UserVO;
 import com.chcwzzz.project.service.UserService;
 import com.chcwzzz.project.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.chcwzzz.project.constant.UserConstant.USER_LOGIN_STATE;
+import static com.chcwzzz.common.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务实现
@@ -73,7 +73,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 3. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
+            user.setUserName(userAccount);
             user.setUserPassword(encryptPassword);
+            user.setUserAvatar("http://img.kaochang.me/notLogin.png");
             user.setAccessKey(accessKey);
             user.setSecretKey(secretKey);
             boolean saveResult = this.save(user);

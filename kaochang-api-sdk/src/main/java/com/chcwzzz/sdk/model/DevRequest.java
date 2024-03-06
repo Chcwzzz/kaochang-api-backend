@@ -16,4 +16,8 @@ public class DevRequest {
      * 请求体body
      */
     private Object body;
+    /**
+     * 请求方式
+     */
+    private String method;
 }
