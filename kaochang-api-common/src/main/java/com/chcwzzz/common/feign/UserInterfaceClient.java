@@ -3,6 +3,8 @@ package com.chcwzzz.common.feign;
 import com.chcwzzz.common.model.entity.UserInterfaceInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -20,4 +22,13 @@ public interface UserInterfaceClient {
      */
     @GetMapping("/getUserLeftInvokes")
     public UserInterfaceInfo getUserLeftInvokes(@RequestParam Long userId, @RequestParam Long interfaceId);
+
+    /**
+     * 更新接口调用次数
+     *
+     * @param userInterfaceInfo
+     * @return
+     */
+    @PostMapping("/invokeUserInterfaceCount")
+    public boolean invokeUserInterfaceCount(@RequestBody UserInterfaceInfo userInterfaceInfo);
 }
