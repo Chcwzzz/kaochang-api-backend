@@ -45,6 +45,11 @@ public class User implements Serializable {
     private String userRole;
 
     /**
+     * 用户账号状态 0 - 正常 1 - 禁用
+     */
+    private Integer status;
+
+    /**
      * accessKey
      */
     private String accessKey;

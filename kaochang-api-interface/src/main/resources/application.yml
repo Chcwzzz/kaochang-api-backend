@@ -22,5 +22,5 @@ mybatis-plus:
     map-underscore-to-camel-case: false
 kaochang:
   client:
-    access-key: kaochang
-    secret-key: abcdefgh
+    access-key: 48c2a35ffd937fa9345d2f4a15a42141
+    secret-key: d5005cfaea243fedeca7e68c63a4e384

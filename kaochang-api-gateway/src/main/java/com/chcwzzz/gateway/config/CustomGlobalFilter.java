@@ -42,6 +42,8 @@ import java.util.*;
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
     private Map<String, String> nonceMap = new HashMap<>();
     private static final List<String> IP_WHITE_LIST = Arrays.asList("127.0.0.1");
+    private static final String DYE_DATA_HEADER = "X-Dye-Data";
+    private static final String DYE_DATA_VALUE = "chcwzzz";
     private final UserClient userClient;
     private final InterfaceClient interfaceClient;
     private final UserInterfaceClient userInterfaceClient;
@@ -157,15 +159,16 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                         if (body instanceof Flux) {
                             // 我们拿到真正的body
                             Flux<? extends DataBuffer> fluxBody = Flux.from(body);
+                            // 7. 调用成功，接口调用次数+1
+                            try {
+                                userInterfaceClient.invokeUserInterfaceCount(userInterfaceInfo);
+                            } catch (Exception e) {
+                                log.error("invokeInterfaceCount error", e);
+                            }
                             // 往返回值里面写数据
                             // 拼接字符串
                             return super.writeWith(fluxBody.map(dataBuffer -> {
-                                // 7. 调用成功，接口调用次数+1
-                                try {
-                                    userInterfaceClient.invokeUserInterfaceCount(userInterfaceInfo);
-                                } catch (Exception e) {
-                                    log.error("invokeInterfaceCount error", e);
-                                }
+
                                 // data从这个content中读取
                                 byte[] content = new byte[dataBuffer.readableByteCount()];
                                 dataBuffer.read(content);
@@ -186,8 +189,17 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                         return super.writeWith(body);
                     }
                 };
+
+                // 流量染色，只有染色数据才能被调用
+                ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                        .header(DYE_DATA_HEADER, DYE_DATA_VALUE)
+                        .build();
+
                 // 设置 response 对象为装饰过的
-                return chain.filter(exchange.mutate().response(decoratedResponse).build());
+                return chain.filter(exchange.mutate()
+                        .request(modifiedRequest)
+                        .response(decoratedResponse)
+                        .build());
             }
             return chain.filter(exchange);// 降级处理返回数据
         } catch (Exception e) {

@@ -1,8 +1,8 @@
 package com.chcwzzz.common.model.dto.user;
 
-import java.io.Serializable;
-
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 用户更新请求
@@ -25,9 +25,14 @@ public class UserUpdateRequest implements Serializable {
     private String userAvatar;
 
     /**
-     * 简介
+     * 用户密码
      */
-    private String userProfile;
+    private String userPassword;
+
+    /**
+     * 用户账号状态 0 - 正常 1 - 禁用
+     */
+    private Integer status;
 
     /**
      * 用户角色：user/admin/ban

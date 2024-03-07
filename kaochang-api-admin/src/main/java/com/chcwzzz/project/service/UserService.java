@@ -2,7 +2,10 @@ package com.chcwzzz.project.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chcwzzz.common.common.BaseResponse;
+import com.chcwzzz.common.model.dto.user.UserAddRequest;
 import com.chcwzzz.common.model.dto.user.UserQueryRequest;
+import com.chcwzzz.common.model.dto.user.UserUpdateRequest;
 import com.chcwzzz.common.model.entity.User;
 import com.chcwzzz.common.model.vo.LoginUserVO;
 import com.chcwzzz.common.model.vo.UserVO;
@@ -106,4 +109,24 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 更新用户ak、sk
+     * @param loginUser
+     * @return
+     */
+    BaseResponse<LoginUserVO> updateUserVoucher(User loginUser);
+
+    /**
+     * 新增用户
+     * @param userAddRequest
+     * @return
+     */
+    User addUser(UserAddRequest userAddRequest);
+
+    /**
+     * 修改用户信息
+     * @param userUpdateRequest
+     * @return
+     */
+    boolean updateUser(UserUpdateRequest userUpdateRequest);
 }

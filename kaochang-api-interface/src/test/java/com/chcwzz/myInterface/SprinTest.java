@@ -1,7 +1,5 @@
 package com.chcwzz.myInterface;
 
-import cn.hutool.core.util.URLUtil;
-import cn.hutool.http.HttpRequest;
 import com.chcwzzz.myInterface.KaoChangInterfaceApplication;
 import com.chcwzzz.myInterface.domain.User;
 import com.chcwzzz.sdk.client.KaochangClient;
@@ -29,8 +27,9 @@ public class SprinTest {
     }
 
     @Test
-    public void testPing(){
-        String res = kaochangClient.translateInterface("我爱你", 3);
+    public void testPing() {
+//        String res = kaochangClient.translateInterface("我爱你", 3);
+        String res = kaochangClient.dailyhotInterface("微博热搜");
         System.out.println("res = " + res);
     }
 }

@@ -1,12 +1,9 @@
 package com.chcwzzz.project.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chcwzzz.common.common.*;
 import com.chcwzzz.common.model.dto.user.*;
 import com.chcwzzz.project.annotation.AuthCheck;
-import com.chcwzzz.common.common.BaseResponse;
-import com.chcwzzz.common.common.DeleteRequest;
-import com.chcwzzz.common.common.ErrorCode;
-import com.chcwzzz.common.common.ResultUtils;
 import com.chcwzzz.common.constant.UserConstant;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.exception.ThrowUtils;
@@ -121,10 +118,7 @@ public class UserController {
         if (userAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = new User();
-        BeanUtils.copyProperties(userAddRequest, user);
-        boolean result = userService.save(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        User user = userService.addUser(userAddRequest);
         return ResultUtils.success(user.getId());
     }
 
@@ -159,9 +153,8 @@ public class UserController {
         if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateRequest, user);
-        boolean result = userService.updateById(user);
+
+        boolean result = userService.updateUser(userUpdateRequest);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
@@ -276,5 +269,64 @@ public class UserController {
         return userService.lambdaQuery()
                 .eq(User::getAccessKey, accessKey)
                 .one();
+    }
+
+    /**
+     * 更新用户ak、sk凭证
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/voucher")
+    public BaseResponse<LoginUserVO> updateUserVoucher(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return userService.updateUserVoucher(loginUser);
+    }
+
+    /**
+     * 解封用户
+     *
+     * @param idRequest
+     * @return
+     */
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/normalUser")
+    public BaseResponse normalUser(@RequestBody IdRequest idRequest) {
+        Long id = idRequest.getId();
+        User user = userService.getById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        if (user.getStatus().equals(0)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户未被禁用");
+        }
+        user.setStatus(0);
+        boolean flag = userService.updateById(user);
+        return ResultUtils.success(flag);
+    }
+
+    /**
+     * 禁用用户
+     *
+     * @param idRequest
+     * @return
+     */
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/banUser")
+    public BaseResponse banUser(@RequestBody IdRequest idRequest) {
+        Long id = idRequest.getId();
+        User user = userService.getById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        if (user.getStatus().equals(1)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户已被禁用");
+        }
+        user.setStatus(1);
+        boolean flag = userService.updateById(user);
+        return ResultUtils.success(flag);
     }
 }

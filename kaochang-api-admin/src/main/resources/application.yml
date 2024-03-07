@@ -54,14 +54,12 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
 # 对象存储
-# todo 需替换配置
-cos:
-  client:
-    accessKey: xxx
-    secretKey: xxx
-    region: xxx
-    bucket: xxx
+qiniuyun:
+  oss:
+    bucket: hahaimg
+    secret-key: JQih2B6kkKvFyYXddpXSV0MLV7I92rhcy5D8YHs3
+    access-key: u4KzVpCo9iu0IUmFoSX9z8I2_ijG72ehW5StLt15
 kaochang:
   client:
-    access-key: kaochang
-    secret-key: abcdefgh
+    access-key: 48c2a35ffd937fa9345d2f4a15a42141
+    secret-key: d5005cfaea243fedeca7e68c63a4e384

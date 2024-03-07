@@ -6,8 +6,7 @@ package com.chcwzzz.common.constant;
 public interface FileConstant {
 
     /**
-     * COS 访问地址
-     * todo 需替换配置
+     * 七牛云 访问地址
      */
-    String COS_HOST = "https://****.****";
+    String KODO_HOST = "http://img.kaochang.me/";
 }

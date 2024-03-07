@@ -5,8 +5,12 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chcwzzz.common.common.BaseResponse;
 import com.chcwzzz.common.common.ErrorCode;
+import com.chcwzzz.common.common.ResultUtils;
 import com.chcwzzz.common.constant.CommonConstant;
+import com.chcwzzz.common.model.dto.user.UserAddRequest;
+import com.chcwzzz.common.model.dto.user.UserUpdateRequest;
 import com.chcwzzz.project.exception.BusinessException;
 import com.chcwzzz.project.mapper.UserMapper;
 import com.chcwzzz.common.model.dto.user.UserQueryRequest;
@@ -118,6 +122,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
+        if (user.getStatus().equals(1)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "该账号已被封禁");
+        }
         // 3. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
@@ -142,6 +149,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         currentUser = this.getById(userId);
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        if (currentUser.getStatus().equals(1)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "该账号已被封禁");
         }
         return currentUser;
     }
@@ -235,14 +245,90 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Long id = userQueryRequest.getId();
         String userName = userQueryRequest.getUserName();
         String userRole = userQueryRequest.getUserRole();
+        String userAccount = userQueryRequest.getUserAccount();
         String sortField = userQueryRequest.getSortField();
         String sortOrder = userQueryRequest.getSortOrder();
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.eq(StringUtils.isNotBlank(userRole), "userRole", userRole);
+        queryWrapper.like(StringUtils.isNotBlank(userAccount), "userAccount", userAccount);
         queryWrapper.like(StringUtils.isNotBlank(userName), "userName", userName);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    /**
+     * 更新用户ak、sk
+     *
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public BaseResponse<LoginUserVO> updateUserVoucher(User loginUser) {
+        String userAccount = loginUser.getUserAccount();
+        // 1. 加密
+        //生成accessKey和secretKey
+        String accessKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + userAccount).getBytes());
+        String secretKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + userAccount + RandomUtil.randomNumbers(4)).getBytes());
+        loginUser.setAccessKey(accessKey);
+        loginUser.setSecretKey(secretKey);
+        this.baseMapper.updateById(loginUser);
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtils.copyProperties(loginUser, loginUserVO);
+        return ResultUtils.success(loginUserVO);
+    }
+
+    /**
+     * 新增用户
+     *
+     * @param userAddRequest
+     * @return
+     */
+    @Override
+    public User addUser(UserAddRequest userAddRequest) {
+        String userAccount = userAddRequest.getUserAccount();
+        String userPassword = userAddRequest.getUserPassword();
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //加密输入的明文密码
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        User user = new User();
+        BeanUtils.copyProperties(userAddRequest, user);
+        //生成accessKey和secretKey
+        String accessKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + userAccount).getBytes());
+        String secretKey = DigestUtils.md5DigestAsHex((SALT + UUID.randomUUID(true) + userAccount + RandomUtil.randomNumbers(4)).getBytes());
+        user.setUserPassword(encryptPassword);
+        user.setUserAvatar("http://img.kaochang.me/notLogin.png");
+        user.setAccessKey(accessKey);
+        user.setSecretKey(secretKey);
+        save(user);
+        return user;
+    }
+
+    /**
+     * 修改用户信息
+     *
+     * @param userUpdateRequest
+     * @return
+     */
+    @Override
+    public boolean updateUser(UserUpdateRequest userUpdateRequest) {
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        User dbUser = getById(user);
+        if (dbUser == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        String dbUserUserPassword = dbUser.getUserPassword();
+        String userPassword = userUpdateRequest.getUserPassword();
+        //不相等说明对用户密码进行了修改
+        if (!dbUserUserPassword.equals(userPassword)) {
+            //加密输入的明文密码
+            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+            user.setUserPassword(encryptPassword);
+        }
+        return updateById(user);
     }
 }
